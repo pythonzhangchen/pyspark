@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     # 需求：WordCount 单词计算，读取HDFS上的word.txt，对其内部的单词统计出现的数据
     # 读取文件
-    file_rdd = sc.textFile("hdfs://hadoop102:8020/wcinput/")
+    file_rdd = sc.textFile("hdfs://hadoop102:8020/wcinput/hello.txt")
     # file_rdd = sc.textFile("../data/input/words.txt")
     # 将单词进行切割，得到一个存储全部单词的集合对象
     word_rdd = file_rdd.flatMap(lambda line: line.split(" "))
