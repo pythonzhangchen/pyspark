@@ -3,7 +3,6 @@
 # @Author : chen.zhang 
 # @File : 01_dataframe_create_1.py
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StringType, IntegerType
 import pandas as pd
 
 if __name__ == '__main__':
