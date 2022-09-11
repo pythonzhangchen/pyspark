@@ -2,27 +2,28 @@
 # @Time : 2022/9/9 23:08 
 # @Author : chen.zhang 
 # @File : main.py
+import time
 
 from pyspark import SparkConf, SparkContext
 from pyspark.storagelevel import StorageLevel
 from operator import add
-from example.defs import context_jieba, append_words, filter_words, extract_user_word
+from defs import context_jieba, append_words, filter_words, extract_user_word
 
 import os
 
 # os.environ['SPARK_HOME'] = '/opt/module/spark-yarn'
-# os.environ["PYSPARK_PYTHON"] = "/usr/bin/python3"
-# os.environ["PYSPARK_DRIVER_PYTHON"] = "/usr/bin/python3"
+os.environ["PYSPARK_PYTHON"] = "/usr/bin/python3"
+os.environ["PYSPARK_DRIVER_PYTHON"] = "/usr/bin/python3"
 
 if __name__ == '__main__':
-    # conf = SparkConf().setAppName('test').setMaster('local')
+    conf = SparkConf().setAppName('test').setMaster('local')
     # 集群模式不用指定master
-    conf = SparkConf().setAppName('test')
+    # conf = SparkConf().setAppName('test')
     sc = SparkContext(conf=conf)
 
     # 读取数据文件
-    # file_rdd = sc.textFile('../data/input/SogouQ.txt')
-    file_rdd = sc.textFile('hdfs://hadoop102:8020/wcinput/SogouQ.txt')
+    file_rdd = sc.textFile('../data/input/SogouQ.txt')
+    # file_rdd = sc.textFile('hdfs://hadoop102:8020/wcinput/SogouQ.txt')
 
     # 对数据进行切分
     split_rdd = file_rdd.map(lambda x: x.split('\t'))
@@ -69,3 +70,5 @@ if __name__ == '__main__':
     hour_with_one_rdd = time_rdd.map(lambda x: (x.split(":")[0], 1))
     result3 = hour_with_one_rdd.reduceByKey(add).sortBy(lambda x: x[1], ascending=False, numPartitions=1).collect()
     print("需求3结果：", result3)
+
+    time.sleep(10000)
