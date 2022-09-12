@@ -2,14 +2,24 @@
 # @Time : 2022/9/11 18:18 
 # @Author : chen.zhang 
 # @File : 11_worldcount_demo.py
+import time
+
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import StructType, StringType, IntegerType
 
 if __name__ == '__main__':
     # 构建执行环境入口对象SparkSession
-    spark = SparkSession.builder.appName('test').master('local[*]').getOrCreate()
+    spark = SparkSession.builder.appName('test').master('local[*]').config('spark.sql.shuffle.partitions',
+                                                                           2).getOrCreate()
     sc = spark.sparkContext
+    """
+    spark.sql.shuffle.partitions 参数指的是，在SQL计算中，shuffle算子阶段默认的分区数是200个
+    对于集群模式说，200个默认也算比较合适
+    如果在local下运行，200个很多，在调度上会带来额外的损耗
+    所以在local下建议修改比较低，比如2\4\10均可
+    这个参数和Spark RDD中设置并行度的参数 是相互独立的。
+    """
 
     schema = StructType(). \
         add('user_id', StringType(), nullable=True). \
@@ -34,7 +44,7 @@ if __name__ == '__main__':
     # TODO 3 查询大于平均分的电影的数量 # Row
     # print('大于平均分的电影的数量:', df.where(df['rank'] > df.select(F.avg(df['rank'])).first()['avg(rank)']).count())
     spark.sql(
-    'select count(*) from movie where rank>(select avg(rank) from movie)').show()
+        'select count(*) from movie where rank>(select avg(rank) from movie)').show()
     # TODO 4 查询高分电影中（>3）打分次数最多的用户，此人打分的平均数
     user_id = \
         df.where('rank> 3').groupBy('user_id').count().withColumnRenamed('count', 'cnt').orderBy('cnt',
@@ -54,9 +64,10 @@ if __name__ == '__main__':
 
     df.groupBy('movie_id').agg(
         F.count('movie_id').alias('cnt'),
-        F.round(F.avg('rank'),2).alias('avg_rank')
-    ).filter('cnt>100').orderBy('avg_rank',ascending=False).limit(10).show()
+        F.round(F.avg('rank'), 2).alias('avg_rank')
+    ).filter('cnt>100').orderBy('avg_rank', ascending=False).limit(10).show()
 
+    time.sleep(1000)
     """
     1、 agg：它是GroupData对象的API，作用是 在里面可以写多个聚合
     2、 alias：他是Column对象的API，可以针对一个列 进行改名
