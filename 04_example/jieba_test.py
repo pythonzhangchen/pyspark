@@ -5,7 +5,7 @@
 
 import jieba
 
-from example.defs import filter_words
+from defs import filter_words
 
 if __name__ == '__main__':
     content = '小明硕士毕业于中国科学院计算所后再清华大学深造'
