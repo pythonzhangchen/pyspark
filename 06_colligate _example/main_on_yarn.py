@@ -12,7 +12,7 @@ dateTs：订单的销售日期
 payType：支付类型
 storeID：店铺ID
 
-2 个操作
+2 操作
 1. 写入结果到Mysql
 2. 写入结果到hive
 '''
@@ -21,12 +21,17 @@ from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.storagelevel import StorageLevel
 from pyspark.sql.types import StringType
+import os
+
+os.environ['SPARK_HOME'] = '/opt/module/spark-yarn'
+os.environ["PYSPARK_PYTHON"] = "/usr/bin/python3"
+os.environ["PYSPARK_DRIVER_PYTHON"] = "/usr/bin/python3"
 
 if __name__ == '__main__':
     spark = SparkSession.builder. \
         appName("Spaek Example"). \
-        master("local[*]"). \
-        config("spark.sql.shuffle.partition", 2). \
+        master("yarn"). \
+        config("spark.sql.shuffle.partition", 3). \
         config("spark.sql.warehouse.dir", "hdfs://hadoop102:8020/user/hive/warehouse"). \
         config("hive.metastore.uris", "thrift://hadoop102:9083"). \
         enableHiveSupport(). \
@@ -83,6 +88,8 @@ if __name__ == '__main__':
         groupBy("storeProvince"). \
         count()
 
+    province_hot_store_count_df.show()
+
     # 写出Mysql
     province_hot_store_count_df.write.mode("overwrite"). \
         format("jdbc"). \
@@ -96,7 +103,7 @@ if __name__ == '__main__':
     # 会将表写入到Hive的数据仓库中
     province_hot_store_count_df.write.mode("overwrite").saveAsTable("default.province_hot_store_count", "parquet")
 
-    # TODO 需求3：Top3省份中，歌声的平均单单价
+    # TODO 需求3：Top3省份中，各省的平均单单价
     top3_province_order_avg_df = top3_province_df_joined.groupBy('storeProvince'). \
         avg('receivable'). \
         withColumnRenamed('avg(receivable)', 'money'). \
