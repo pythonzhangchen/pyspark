@@ -4,6 +4,7 @@ import os
 from pyspark import SparkConf, SparkContext
 from defs_21 import city_with_category
 
+
 os.environ['SPARK_HOME'] = '/opt/module/spark-yarn'
 os.environ["PYSPARK_PYTHON"] = "/usr/bin/python3"
 os.environ["PYSPARK_DRIVER_PYTHON"] = "/usr/bin/python3"
